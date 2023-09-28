@@ -10,6 +10,7 @@ Some other stuff about this project.
 ## Purpose
 
 Sample website with plenty of files for demos
+This is the purpose
 
 ## How to contrinute
 
