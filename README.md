@@ -10,10 +10,11 @@ Some other stuff about this project.
 ## Purpose
 
 Sample website with plenty of files for demos
-This is the purpose
+This is the purpose that is important.
 
 ## How to contrinute
 
 ## Deployment
 
 This is a sample deployment text.
+Added something more.
