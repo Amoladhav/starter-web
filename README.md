@@ -4,7 +4,8 @@ This is a sample section
 
 ## Introduction
 
-This repository is for showing how Git and GitHub work
+This repository is for showing how Git and GitHub work.
+Some other stuff about this project.
 
 ## Purpose
 
