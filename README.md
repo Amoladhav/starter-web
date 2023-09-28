@@ -14,6 +14,8 @@ This is the purpose that is important.
 
 ## How to contrinute
 
+Please fork this repoistory and then ask for a pull request
+
 ## Deployment
 
 This is a sample deployment text.
