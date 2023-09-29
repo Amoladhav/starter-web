@@ -1,0 +1,169 @@
+<templateSet group="SQL">
+  <template name="sel" value="select * from $table$$END$&#10;limit 10;" description="select all rows from a table" toReformat="true" toShortenFQNames="false">
+    <variable name="table" expression="dbObjectName()" defaultValue="" alwaysStopAt="true" />
+    <context />
+  </template>
+  <template name="view" value="create or replace view $view$ as select * from $table$ $END$;" description="new view definition" toReformat="true" toShortenFQNames="false">
+    <variable name="view" expression="" defaultValue="&quot;new_view&quot;" alwaysStopAt="true" />
+    <variable name="table" expression="dbOsbjectName()" defaultValue="" alwaysStopAt="true" />
+    <context />
+  </template>
+  <template name="ddl" value="SELECT EXPORT_OBJECTS('','$schema$.$table$',FALSE)$END$;" description="new view definition" toReformat="true" toShortenFQNames="false">
+    <variable name="schema" expression="" defaultValue="" alwaysStopAt="true" />
+    <variable name="table" expression="dbOsbjectName()" defaultValue="" alwaysStopAt="true" />
+    <context>
+      <option name="SQL_STATEMENT" value="true" />
+      <option name="SQL_STATEMENT_CASSANDRA" value="false" />
+      <option name="SQL_STATEMENT_COUCHBASE" value="false" />
+      <option name="SQL_STATEMENT_MONGO" value="false" />
+    </context>
+  </template>
+  <template name="col" value="WITH sub as&#10; (&#10; select&#10;     table_schema, table_name, table_schema || '.' || table_name tab, column_name, data_type, data_type_length,&#10;     'select ' || column_name || ', * from ' || table_schema || '.' || table_name || ' limit 10;' x&#10; FROM&#10;     columns&#10; UNION ALL&#10; SELECT&#10;     table_schema, table_name, table_schema || '.' || table_name tab, column_name, data_type, data_type_length,&#10;     'select ' || column_name || ', * from ' || table_schema || '.' || table_name || ' limit 10;' x&#10; FROM&#10;     view_columns&#10; )&#10;&#10;SELECT * FROM sub&#10;WHERE&#10;   table_schema = 'prod'&#10;-- AND table_name ilike '$tab$%'&#10;  AND column_name ilike '%$col$%'&#10;;$END$" description="list columns in tables/ views" toReformat="true" toShortenFQNames="false">
+    <variable name="tab" expression="" defaultValue="" alwaysStopAt="true" />
+    <variable name="col" expression="" defaultValue="" alwaysStopAt="true" />
+    <context />
+  </template>
+  <template name="stat" value="SELECT ANALYZE_STATISTICS('$table$');$END$&#10;" description="Collect statistics for a given table" toReformat="true" toShortenFQNames="false">
+    <variable name="table" expression="dbObjectName()" defaultValue="" alwaysStopAt="true" />
+    <context>
+      <option name="SQL_STATEMENT" value="true" />
+    </context>
+  </template>
+  <template name="cnt" value="SELECT '$same$' t,COUNT(*) cnt&#10;FROM $table$ &#10;;&#10;&#10;SELECT '$same$', to_char(COUNT(*), '999,999,999,999,999,999') cnt&#10;FROM $same$&#10;;" description="row count" toReformat="true" toShortenFQNames="false">
+    <variable name="table" expression="" defaultValue="" alwaysStopAt="true" />
+    <variable name="same" expression="table" defaultValue="" alwaysStopAt="true" />
+    <context>
+      <option name="SQL_STATEMENT" value="true" />
+      <option name="SQL_STATEMENT_CASSANDRA" value="false" />
+      <option name="SQL_STATEMENT_COUCHBASE" value="false" />
+      <option name="SQL_STATEMENT_MONGO" value="false" />
+    </context>
+  </template>
+  <template name="syscol" value="WITH sub as&#10; (&#10;     select&#10;         table_schema, table_name, table_schema || '.' || table_name tab, column_name, data_type, data_type_length,&#10;         'select ' || column_name || ', * from ' || table_schema || '.' || table_name || ' limit 10;' x&#10;     FROM&#10;         system_columns&#10; )&#10;SELECT * FROM sub&#10;WHERE&#10;column_name ilike '%$syscol$%'&#10;AND table_schema ilike 'v_%'&#10;-- AND table_name ilike '%$systab$%'&#10;;$END$" description="list columns in SYS tables/ views" toReformat="true" toShortenFQNames="false">
+    <variable name="syscol" expression="" defaultValue="" alwaysStopAt="true" />
+    <variable name="systab" expression="" defaultValue="" alwaysStopAt="true" />
+    <context>
+      <option name="SQL_CODE" value="true" />
+    </context>
+  </template>
+  <template name="part" value="&#10;-- GET PARTITION COLUMN NAME&#10;&#10;SELECT table_schema || '.' || table_name tab,&#10;       CASE&#10;         WHEN partition_expression = ''&#10;           THEN 'BLANK'&#10;         WHEN partition_expression &lt;&gt; ''&#10;           THEN REGEXP_SUBSTR(partition_expression, table_name || '\.(\w*).*', 1, 1, '', 1)&#10;         ELSE partition_expression&#10;       END  partition_column&#10;FROM tables&#10;WHERE&#10;  LOWER(table_schema || '.' || table_name) IN ( '$schema$.$tab$', 'prod.bar' );&#10;&#10;&#10;&#10;SELECT projection_schema || '.' || anchor_table_name&#10;     , partition_key&#10;     , prt.projection_name&#10;     , prt.projection_id&#10;     , ROUND(SUM(ros_size_bytes / POWER(1024, 3)), 1) GB&#10;     , SUM(ros_row_count)                             cnt&#10;FROM partitions  prt&#10;JOIN projections prj ON&#10;      prt.projection_id = prj.projection_id&#10;    AND prt.table_schema = prj.projection_schema&#10;WHERE&#10;    LOWER(projection_schema || '.' || anchor_table_name) = LOWER('$schema$.$tab$')&#10;GROUP BY 1, 2, 3, 4&#10;ORDER BY 1, 2, 3, 4;&#10;&#10;WITH sub AS (&#10;  SELECT table_name&#10;       , projection_basename                                                                                       x&#10;       , segment_expression&#10;       , REGEXP_REPLACE(MAX(CASE WHEN sort_position = 0 THEN projection_column_name ELSE '' END) || ',' ||&#10;                        MAX(CASE WHEN sort_position = 1 THEN projection_column_name ELSE '' END) || ',' ||&#10;                        MAX(CASE WHEN sort_position = 2 THEN projection_column_name ELSE '' END) || ',' ||&#10;                        MAX(CASE WHEN sort_position = 3 THEN projection_column_name ELSE '' END), '(,$)|(,,)', '') y&#10;  FROM projection_columns&#10;  JOIN projections p USING (projection_id)&#10;  WHERE&#10;      p.projection_id IN&#10;      (SELECT projection_id&#10;       FROM projections&#10;       WHERE&#10;           projection_schema = 'prod'&#10;       AND anchor_table_name IN (&#10;         SELECT anchor_table_name&#10;         FROM projections&#10;         WHERE projection_schema = 'prod'&#10;         GROUP BY 1&#10;         HAVING COUNT(DISTINCT projection_basename) &gt; 1&#10;       )&#10;      )&#10;  AND sort_position IS NOT NULL&#10;  GROUP BY 1, 2, 3&#10;)&#10;SELECT *, 'DROP PROJECTION $schema$.' || x || ';' z&#10;FROM sub&#10;ORDER BY 1, 2;&#10;&#10;&#10;SELECT *&#10;FROM projection_columns&#10;JOIN projections p USING (projection_id)&#10;WHERE&#10;  anchor_table_name = '$tab$';" description="list details of paritions" toReformat="true" toShortenFQNames="false">
+    <variable name="schema" expression="" defaultValue="" alwaysStopAt="true" />
+    <variable name="tab" expression="" defaultValue="" alwaysStopAt="true" />
+    <context>
+      <option name="SQL_CODE" value="true" />
+    </context>
+  </template>
+  <template name="batch" value="-- CHECK HOW THE STEP RUNS&#10;SELECT * --endTs IS NOT NULL&#10;FROM ait3.etlScriptStats&#10;WHERE&#10;  step = 'foo';&#10;&#10;-- CHECK THE SECOND LAST RUN&#10;WITH sub1 AS (&#10;  SELECT DISTINCT ZEROIFNULL(batchId) batchId&#10;  FROM ait3.etlScriptStats&#10;)&#10;   , sub2 AS&#10;  (SELECT batchId, ROW_NUMBER() OVER (ORDER BY batchId DESC) rev FROM sub1)&#10;SELECT * --endTs IS NOT NULL&#10;FROM ait3.etlScriptStats&#10;JOIN sub2 USING (batchid)&#10;WHERE -- USE ONE OF THE FILTERS BELOW&#10;      rev = 2 -- SECOND LAST -- CHANGE THIS TO ANY NUMBERS&#10;  sub2.batchid = -999 -- OR USE THIS&#10;;&#10;&#10;-- RESET TO FORCE RERUN A STEP -- LAST/ MOST RECENT ACTIVE BATCH&#10;SELECT *&#10;FROM ait3.etlScriptStats&#10;WHERE&#10;    step = 'foo'&#10;AND batchid = (SELECT MAX(batchid) FROM ait3.etlScriptStats);&#10;&#10;UPDATE ait3.etlScriptStats&#10;SET startTS = NULL&#10;  , endTS   = NULL&#10;  , skipped = FALSE&#10;WHERE&#10;    step = 'foo'&#10;AND batchid = (SELECT MAX(batchid) FROM ait3.etlScriptStats);&#10;&#10;COMMIT;" description="manage etl batch" toReformat="true" toShortenFQNames="false">
+    <context>
+      <option name="SQL_CODE" value="true" />
+    </context>
+  </template>
+  <template name="depend" value="with sub as (&#10;SELECT LOWER(table_schema) parentSchema, LOWER(table_name) parentName,&#10;       LOWER(COALESCE(reference_table_schema, '') || '.' || COALESCE(reference_table_name, '')) children&#10;       FROM view_tables&#10;         )&#10;      select parentSchema || '.' || parentName parent&#10;   , LISTAGG(children USING PARAMETERS max_length=8000, separator=', ', on_overflow='TRUNCATE') flasttendListOfchildren -- UNCOMMENT IF FLATTENED LIST&#10;--       , children&#10;FROM sub&#10;WHERE&#10;--  parentSchema = 'foo'&#10;--  parentName in ('bar')&#10;--  children in ('kidz')&#10;parentName&#10;IN (&#10;    '$parent$'&#10;    ,'$parent1$'&#10;    )&#10;  GROUP BY 1  -- UNCOMMENT IF FLATTENED LIST&#10;  ORDER BY 1,2;" description="view dependency" toReformat="true" toShortenFQNames="false">
+    <variable name="parent" expression="" defaultValue="" alwaysStopAt="true" />
+    <variable name="parent1" expression="" defaultValue="" alwaysStopAt="true" />
+    <context>
+      <option name="SQL_CODE" value="true" />
+    </context>
+  </template>
+  <template name="conf" value="SELECT *&#10;FROM configuration_parameters&#10;WHERE&#10;  parameter_name ILIKE '%$param$%';$END$&#10;&#10;SELECT get_config_parameter('$same$');&#10;&#10;SELECT SET_CONFIG_PARAMETER('$same$');&#10;&#10;SELECT get_config_parameter('$same$');" description="configuration parameter" toReformat="true" toShortenFQNames="false">
+    <variable name="param" expression="" defaultValue="" alwaysStopAt="true" />
+    <variable name="same" expression="param" defaultValue="" alwaysStopAt="true" />
+    <context>
+      <option name="SQL_CODE" value="true" />
+    </context>
+  </template>
+  <template name="sub" value="WITH sub AS&#10; (&#10;  $SELECT$&#10; )&#10;SELECT *&#10;FROM sub&#10;WHERE 0$END$&#10;--  ORDER BY 1&#10;;" description="CTE" toReformat="true" toShortenFQNames="false">
+    <variable name="SELECT" expression="" defaultValue="" alwaysStopAt="true" />
+    <context>
+      <option name="SQL_CODE" value="true" />
+    </context>
+  </template>
+  <template name="skew" value="WITH sub AS (&#10;  SELECT ps.anchor_table_schema || '.' || ps.anchor_table_name                                                 tab,&#10;         projection_basename,&#10;         REGEXP_REPLACE(ps.node_name, '[^0-9]', '')::INT                                                       NN,&#10;         used_bytes,&#10;         SUM(used_bytes) OVER (PARTITION BY ps.anchor_table_schema, ps.anchor_table_name, projection_basename) tot_size,&#10;         SUM(row_count) OVER (PARTITION BY ps.anchor_table_schema, ps.anchor_table_name, projection_basename)  tot_cnt,&#10;         MIN(used_bytes) OVER (PARTITION BY ps.anchor_table_schema, ps.anchor_table_name, projection_basename) min_size,&#10;         MAX(used_bytes) OVER (PARTITION BY ps.anchor_table_schema, ps.anchor_table_name, projection_basename) max_size,&#10;         MIN(row_count) OVER (PARTITION BY ps.anchor_table_schema, ps.anchor_table_name, projection_basename)  min_cnt,&#10;         MAX(row_count) OVER (PARTITION BY ps.anchor_table_schema, ps.anchor_table_name, projection_basename)  max_cnt&#10;  FROM PROJECTION_STORAGE ps&#10;  JOIN PROJECTIONS pj USING (projection_id)&#10;where ps.projection_schema = 'prod'&#10;)&#10;, sub1 AS (&#10;  SELECT *, ((max_size-min_size)*100/min_size)::INT  pctSkewSize, ((max_cnt-min_cnt)*100/min_cnt)::INT pctCntSkew from sub&#10;  where tot_size &gt; 0&#10;  AND tot_cnt &gt; 0&#10;  AND (max_cnt &gt; min_cnt OR max_size &gt; min_size)&#10;  AND min_size &gt; 0 AND min_cnt &gt; 0&#10;)&#10;  SELECT distinct tab, projection_basename, min_size, max_size, pctSkewSize, min_cnt, max_cnt, pctCntSkew&#10; from sub1 ORDER BY pctCntSkew DESC,  pctSkewSize DESC&#10;limit 50;" description="data skew" toReformat="true" toShortenFQNames="false">
+    <context>
+      <option name="SQL_CODE" value="true" />
+    </context>
+  </template>
+  <template name="c2" value="SELECT DISTINCT c.table_schema,&#10;                c.table_name,&#10;                c.column_name,&#10;                c.data_type,&#10;                c.data_type_length,&#10;                CASE WHEN c.is_nullable = TRUE THEN 'NULL' ELSE 'NOT NULL' END,&#10;                c.is_nullable,&#10;                CASE WHEN c.is_identity IS TRUE THEN 'PK' ELSE '' END is_pk&#10;FROM columns c&#10;JOIN columns d ON&#10;  ( c.table_schema = d.table_schema AND c.table_name = d.table_name )&#10;JOIN columns e ON&#10;  ( e.table_schema = d.table_schema AND e.table_name = d.table_name )&#10;WHERE&#10;    UPPER(c.column_name) IN (UPPER(d.column_name), UPPER(e.column_name)) AND&#10;    e.table_schema ILIKE '%prod%' AND&#10;    d.column_name ILIKE '%$col1$%' AND&#10;    e.column_name ILIKE '%$col2$%'&#10;ORDER BY 1, 2, 3$END$;" description="list tables/views with the two columns" toReformat="true" toShortenFQNames="false">
+    <variable name="col1" expression="" defaultValue="" alwaysStopAt="true" />
+    <variable name="col2" expression="" defaultValue="" alwaysStopAt="true" />
+    <context>
+      <option name="SQL_CODE" value="true" />
+    </context>
+  </template>
+  <template name="sysc2" value="SELECT DISTINCT c.table_schema,&#10;                c.table_name,&#10;                c.column_name,&#10;                c.data_type,&#10;                c.data_type_length,&#10;                CASE WHEN c.is_nullable = TRUE THEN 'NULL' ELSE 'NOT NULL' END,&#10;                c.is_nullable&#10;FROM system_columns c&#10;JOIN system_columns d ON&#10;  ( c.table_schema = d.table_schema AND c.table_name = d.table_name )&#10;JOIN system_columns e ON&#10;  ( e.table_schema = d.table_schema AND e.table_name = d.table_name )&#10;WHERE&#10;    UPPER(c.column_name) IN (UPPER(d.column_name), UPPER(e.column_name)) AND&#10;    d.column_name ILIKE '%$col1$%' AND&#10;    e.column_name ILIKE '%$col2$%%'&#10;ORDER BY 1, 2, 3$END$;" description="list tables/views with the two system columns" toReformat="true" toShortenFQNames="false">
+    <variable name="col1" expression="" defaultValue="" alwaysStopAt="true" />
+    <variable name="col2" expression="" defaultValue="" alwaysStopAt="true" />
+    <context>
+      <option name="SQL_CODE" value="true" />
+    </context>
+  </template>
+  <template name="gb" value="GROUP BY 1$END$&#10;ORDER BY 1;" description="group by order by" toReformat="true" toShortenFQNames="false">
+    <context>
+      <option name="SQL_CODE" value="true" />
+    </context>
+  </template>
+  <template name="kill" value="SELECT CLOSE_SESSION('$END$');&#10;&#10;SELECT 'SELECT CLOSE_SESSION(''' || session_id || ''');' x, user_name, transaction_id, transaction_description from sessions&#10;where transaction_id in (select transaction_id from locks where object_name ilike 'Table:$schema$.$tab$');" description="close session" toReformat="true" toShortenFQNames="false">
+    <variable name="schema" expression="" defaultValue="prod" alwaysStopAt="true" />
+    <variable name="tab" expression="" defaultValue="" alwaysStopAt="true" />
+    <context>
+      <option name="SQL_CODE" value="true" />
+    </context>
+  </template>
+  <template name="nullpct" value="WITH sub AS&#10;       (&#10;         SELECT ', SUM((' || column_name || ' IS NULL)::INT) AS ' || column_name || '_nullCnt'                           x&#10;              , '&#10;    , ROUND(SUM((' || column_name || ' IS NULL)::INT) *100/COUNT(*),1) AS ' || column_name || '_nullPct' y&#10;              , ROW_NUMBER() OVER (ORDER BY ordinal_position)                                                            rn&#10;              , ROW_NUMBER() OVER (ORDER BY ordinal_position DESC)                                                       rev_rn&#10;              , table_schema&#10;              , table_name&#10;              , ordinal_position&#10;         FROM columns&#10;         WHERE&#10;             column_name NOT ILIKE '%tableSK%'&#10;         AND table_schema = '$schema$'&#10;         AND table_name ILIKE '%$tab$%'&#10;         ORDER BY ordinal_position&#10;       )&#10;SELECT CASE&#10;         WHEN rn = 1&#10;           THEN 'SELECT count(*) cnt' || x || y&#10;         WHEN rev_rn = 1&#10;           THEN x || y || '&#10;       FROM ' || table_schema || '.' || table_name || ';'&#10;         ELSE&#10;           x || y&#10;       END a&#10;FROM sub;" description="null percentage in all columns of a table" toReformat="true" toShortenFQNames="false">
+    <variable name="schema" expression="" defaultValue="" alwaysStopAt="true" />
+    <variable name="tab" expression="" defaultValue="" alwaysStopAt="true" />
+    <context>
+      <option name="SQL_CODE" value="true" />
+    </context>
+  </template>
+  <template name="uniq" value="WITH sub AS&#10;       (&#10;         SELECT 'count(distinct ' || column_name || ') ' || column_name || '_cnt' x&#10;              , ROW_NUMBER() OVER (ORDER BY ordinal_position)                     rn&#10;              , ROW_NUMBER() OVER (ORDER BY ordinal_position DESC)                rev_rn&#10;              , table_schema&#10;              , table_name&#10;              , ordinal_position&#10;         FROM columns&#10;         WHERE&#10;             column_name NOT ILIKE '%tableSK%'&#10;         AND table_schema = '$schema$'&#10;         AND table_name ILIKE '%$tab$%'&#10;         ORDER BY ordinal_position&#10;       )&#10;SELECT CASE&#10;         WHEN rn = 1&#10;           THEN 'SELECT count(*) cnt,' || x || ','&#10;         WHEN rev_rn = 1&#10;           THEN x || ' FROM ' || table_schema || '.' || table_name || ';'&#10;         ELSE&#10;           x || CASE WHEN rev_rn &gt; 1 THEN ',' ELSE '' END&#10;       END a&#10;FROM sub;" description="uniqueness (grain) of a column" toReformat="true" toShortenFQNames="false">
+    <variable name="schema" expression="" defaultValue="" alwaysStopAt="true" />
+    <variable name="tab" expression="" defaultValue="" alwaysStopAt="true" />
+    <context>
+      <option name="SQL_CODE" value="true" />
+    </context>
+  </template>
+  <template name="listagg" value="-- list agg example&#10;with sub as (select table_schema || '.' || table_name t, column_name, ordinal_position from columns where LOWER( table_schema || '.' || table_name) = LOWER('adhoc_aadhav.GMS_event_667_0006_uploadRequestComplete') and NOT is_identity)&#10;select 'SELECT&#10;' || listagg(column_name USING PARAMETERS max_length=8000, separator=', ', on_overflow='TRUNCATE') || '&#10;FROM ' || t || '&#10;limit 10;' x from sub group by t;" description="example" toReformat="true" toShortenFQNames="false">
+    <context>
+      <option name="SQL_CODE" value="true" />
+    </context>
+  </template>
+  <template name="allcol" value="-- list agg example&#10;with sub as (select table_schema || '.' || table_name t, column_name, ordinal_position from columns where LOWER( table_schema || '.' || table_name) = LOWER('$schema$.$tab$') and NOT is_identity)&#10;select 'SELECT&#10;' || listagg(column_name USING PARAMETERS max_length=8000, separator=', ', on_overflow='TRUNCATE') || '&#10;FROM ' || t || '&#10;limit 10;$END$' x from sub group by t;" description="select all columns explicitely" toReformat="true" toShortenFQNames="false">
+    <variable name="schema" expression="" defaultValue="" alwaysStopAt="true" />
+    <variable name="tab" expression="" defaultValue="" alwaysStopAt="true" />
+    <context>
+      <option name="SQL_CODE" value="true" />
+    </context>
+  </template>
+  <template name="state" value="with sub as (&#10;  SELECT node_state,&#10;         COALESCE(LEAD(node_state, 1) OVER (PARTITION BY node_name ORDER BY event_timestamp ), node_state) next,&#10;         event_timestamp                                                                                   beginTs,&#10;         COALESCE(LEAD(event_timestamp, 1) OVER (PARTITION BY node_name ORDER BY event_timestamp ),&#10;                  CLOCK_TIMESTAMP())                                                                       endTs&#10;  FROM v_monitor.node_states&#10;  WHERE event_timestamp &gt; '$DT$'::TIMESTAMP&#10;  ORDER BY event_timestamp&#10;)&#10;SELECT node_state || ' --&gt; ' || next stateChange, beginTs, endTs, endTs - beginTs duration&#10;from sub;&#10;&#10;-- +---------------------------+---------------------------------+---------------------------------+-----------------+&#10;-- |stateChange                |beginTs                          |endTs                            |duration         |&#10;-- +---------------------------+---------------------------------+---------------------------------+-----------------+&#10;-- |UNSAFE --&gt; DOWN            |2022-03-17 11:49:51.265926 +00:00|2022-03-17 11:49:51.281810 +00:00|00:00:00.015884  |&#10;-- |DOWN --&gt; SHUTDOWN          |2022-03-17 11:49:51.281810 +00:00|2022-03-17 11:49:51.504262 +00:00|00:00:00.222452  |&#10;-- |SHUTDOWN --&gt; INITIALIZING  |2022-03-17 11:49:51.504262 +00:00|2022-03-17 12:59:23.676828 +00:00|01:09:32.172566  |&#10;-- |INITIALIZING --&gt; RECOVERING|2022-03-17 12:59:23.676828 +00:00|2022-03-17 12:59:26.952830 +00:00|00:00:03.276002  |&#10;-- |RECOVERING --&gt; READY       |2022-03-17 12:59:26.952830 +00:00|2022-03-17 13:04:42.653107 +00:00|00:05:15.700277  |&#10;-- |READY --&gt; UP               |2022-03-17 13:04:42.653107 +00:00|2022-03-17 13:04:42.653262 +00:00|00:00:00.000155  |&#10;-- |UP --&gt; UP                  |2022-03-17 13:04:42.653262 +00:00|2022-03-22 16:19:15.959980 +00:00|5 03:14:33.306718|&#10;-- +---------------------------+---------------------------------+---------------------------------+-----------------+" description="state change of nodes" toReformat="true" toShortenFQNames="false">
+    <variable name="DT" expression="" defaultValue="" alwaysStopAt="true" />
+    <context>
+      <option name="SQL_STATEMENT" value="true" />
+      <option name="SQL_STATEMENT_CLICKHOUSE" value="false" />
+      <option name="SQL_STATEMENT_MONGO" value="false" />
+    </context>
+  </template>
+  <template name="tab" value="WITH sub AS (&#10;  SELECT 'table'                           flag,&#10;         owner_name                        table_schema,&#10;         table_schema || '.' || table_name tab&#10;  FROM tables&#10;--union all&#10;--SELECT 'view' flag, table_schema,  table_schema || '.' || table_name tab&#10;--from views&#10;)&#10;SELECT *&#10;FROM sub&#10;WHERE&#10;    tab ILIKE '%$TAB$%'&#10;-- AND&#10;-- table_schema ilike '%$END$%'&#10;ORDER BY 2;" description="new table definition" toReformat="true" toShortenFQNames="false">
+    <variable name="TAB" expression="" defaultValue="" alwaysStopAt="true" />
+    <context />
+  </template>
+  <template name="size" value="SELECT&#10;--&#9;ANCHOR_TABLE_NAME&#10;--, PROJECTION_SCHEMA&#10;  ANCHOR_TABLE_SCHEMA || '.' || ANCHOR_TABLE_NAME  x&#10;     , ROUND(SUM(USED_BYTES) / POW(1024, 3), 2) AS size_gb&#10;     , SUM(ROW_COUNT)                           AS row_count&#10;FROM PROJECTION_STORAGE&#10;WHERE&#10;    LOWER(ANCHOR_TABLE_SCHEMA || '.' || ANCHOR_TABLE_NAME) = LOWER('foo.bar')&#10;--&#9;lower(ANCHOR_TABLE_SCHEMA) = lower('bar') AND&#10;--&#9;PROJECTION_NAME LIKE '%b0'&#10;GROUP BY 1&#10;ORDER BY size_gb DESC limit 50;" description="descending order by size of tables" toReformat="true" toShortenFQNames="false">
+    <context>
+      <option name="SQL_STATEMENT" value="true" />
+    </context>
+  </template>
+  <template name="grant" value="-- GRANT SELECT ON foo TO bar WITH GRANT OPTION;&#10;  SELECT&#10;  CASE WHEN object_name IS NULL THEN object_name ELSE object_schema || '.' || object_name END obj,&#10;    owner_name, grantor, grantee, privileges_description, object_type,&#10;    'GRANT ' || REPLACE(privileges_description, '*', '') || ' on ' ||  object_schema || '.' || object_name || ' to ' || grantee || ';' stmt&#10; FROM grants g&#10;LEFT JOIN&#10;  (SELECT owner_name, table_Schema, table_name FROM TABLES&#10;  UNION&#10;  SELECT owner_name, table_Schema, table_name FROM views ) t ON (object_schema = table_schema AND table_name = object_name)&#10;WHERE object_type NOT IN ('RESOURCEPOOL', 'SCHEMA', 'ROLE')&#10;AND object_name = '$obj$'&#10;ORDER BY 1;&#10;&#10;WITH sub AS&#10;       (&#10;         SELECT object_schema || '.' || object_name obj,&#10;                object_type,&#10;                grantor,&#10;                grantee,&#10;                privileges_description,&#10;                object_schema,&#10;                object_name&#10;         FROM grants&#10;       )&#10;SELECT *&#10;FROM sub&#10;WHERE&#10;    object_name IN ('v_f_majorCurrencyExchangeRateMonth', 'v_exchange_rates')&#10;ORDER BY 1, 2;&#10;$end$" description="check grants" toReformat="true" toShortenFQNames="false">
+    <variable name="obj" expression="" defaultValue="" alwaysStopAt="true" />
+    <variable name="end" expression="" defaultValue="" alwaysStopAt="true" />
+    <context>
+      <option name="SQL_STATEMENT" value="true" />
+    </context>
+  </template>
+  <template name="dup" value="dup&#10;-- EXTENT OF DUPS&#10;WITH sub AS&#10;       (&#10;         SELECT a&#10;              , b&#10;              , c&#10;              , COUNT(*) - 1 dupCnt&#10;         FROM $END$&#10;         GROUP BY 1, 2, 3&#10;       )&#10;SELECT dupCnt, COUNT(*) keys_with_dups&#10;FROM sub&#10;GROUP BY 1&#10;ORDER BY 1;&#10;-- ACTUAL DUPS&#10;SELECT a, b, c, COUNT(*) cnt&#10;FROM $END$&#10;GROUP BY 1, 2, 3&#10;HAVING&#10;  COUNT(*) &gt; 1&#10;LIMIT 10;&#10;-- CHECK GRAIN&#10;WITH sub AS&#10;       (&#10;         SELECT foo&#10;              , COUNT(DISTINCT bar) uniqCnt&#10;         FROM XXX&#10;         GROUP BY 1&#10;       )&#10;SELECT uniqCnt, COUNT(*) howMany_Foos&#10;FROM sub&#10;GROUP BY 1&#10;ORDER BY 1;" description="check duplicates" toReformat="true" toShortenFQNames="false">
+    <context>
+      <option name="SQL_STATEMENT" value="true" />
+      <option name="SQL_STATEMENT_CLICKHOUSE" value="false" />
+      <option name="SQL_STATEMENT_MONGO" value="false" />
+    </context>
+  </template>
+</templateSet>

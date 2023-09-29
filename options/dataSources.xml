@@ -1,0 +1,81 @@
+<application>
+  <component name="dataSourceStorage" format="xml" multifile-model="true">
+    <data-source source="LOCAL" name="MATRIX ADMIN" uuid="f3480d28-649d-423d-acce-5dac2b7fd9bd">
+      <driver-ref>vertica</driver-ref>
+      <synchronize>true</synchronize>
+      <auto-commit>false</auto-commit>
+      <jdbc-driver>com.vertica.jdbc.Driver</jdbc-driver>
+      <jdbc-url>jdbc:vertica://10.11.192.135:5433/gaikai</jdbc-url>
+      <vm-options>-DsocksProxyHost=127.0.0.1 -DsocksProxyPort=1080</vm-options>
+      <working-dir>$ProjectFileDir$</working-dir>
+      <keep-alive enable="true" />
+    </data-source>
+    <data-source source="LOCAL" name="MATRIX ETL" uuid="96e32547-e368-4a57-a8ee-195e4d32af01">
+      <driver-ref>vertica</driver-ref>
+      <synchronize>true</synchronize>
+      <auto-commit>false</auto-commit>
+      <jdbc-driver>com.vertica.jdbc.Driver</jdbc-driver>
+      <jdbc-url>jdbc:vertica://10.11.192.135:5433/gaikai</jdbc-url>
+      <vm-options>-DsocksProxyHost=127.0.0.1 -DsocksProxyPort=1080</vm-options>
+      <working-dir>$ProjectFileDir$</working-dir>
+      <driver-properties>
+        <property name="autocommit" value="false" />
+      </driver-properties>
+      <keep-alive enable="true" />
+    </data-source>
+    <data-source source="LOCAL" name="preprod" single-connection="true" uuid="8fff5436-3f61-4145-aa8a-66ecc10d522a">
+      <driver-ref>snowflake</driver-ref>
+      <synchronize>true</synchronize>
+      <auto-commit>false</auto-commit>
+      <jdbc-driver>net.snowflake.client.jdbc.SnowflakeDriver</jdbc-driver>
+      <jdbc-url>jdbc:snowflake://siedpenpd.snowflakecomputing.com:443?warehouse=FTG_WHS&amp;db=FTGPREPROD&amp;role=PSN-NAVNPRDSF-FTG-ADM&amp;schema=FTG_OPERATION</jdbc-url>
+      <jdbc-additional-properties>
+        <property name="authenticator" value="externalbrowser" />
+      </jdbc-additional-properties>
+      <working-dir>$ProjectFileDir$</working-dir>
+      <init-script>set allow_id_token = TRUE;use role &quot;PSN-NAVNPRDSF-FTG-ADM&quot;; use schema PREPROD; USE DATABASE FTGPREPROD; USE WAREHOUSE FTG_WHS;</init-script>
+      <keep-alive enable="true" />
+      <auto-close enable="true" />
+    </data-source>
+    <data-source source="LOCAL" name="prod" single-connection="true" uuid="6c5011b8-ac91-47aa-ab6e-3bc053a2323c">
+      <driver-ref>snowflake</driver-ref>
+      <synchronize>true</synchronize>
+      <auto-commit>false</auto-commit>
+      <jdbc-driver>net.snowflake.client.jdbc.SnowflakeDriver</jdbc-driver>
+      <jdbc-url>jdbc:snowflake://siedpe.snowflakecomputing.com:443?warehouse=ftg_whs&amp;db=FTGPROD&amp;schema=FTG_OPERATION&amp;role=PSN-NAVPRODSF-FTG-ADM</jdbc-url>
+      <jdbc-additional-properties>
+        <property name="authenticator" value="externalbrowser" />
+      </jdbc-additional-properties>
+      <working-dir>$ProjectFileDir$</working-dir>
+      <keep-alive enable="true" />
+      <auto-close enable="true" />
+    </data-source>
+    <data-source source="LOCAL" name="DSO Prod" single-connection="true" uuid="3ce9be07-60d1-4c7a-9cca-77e3e1580509">
+      <driver-ref>snowflake</driver-ref>
+      <synchronize>true</synchronize>
+      <auto-commit>false</auto-commit>
+      <jdbc-driver>net.snowflake.client.jdbc.SnowflakeDriver</jdbc-driver>
+      <jdbc-url>jdbc:snowflake://siebis.snowflakecomputing.com:443?warehouse=WH_PS_CGEI_PROD&amp;db=PS_PRD_01_USERGLOBAL&amp;schema=PUBLIC</jdbc-url>
+      <jdbc-additional-properties>
+        <property name="authenticator" value="https://sie.okta.com" />
+      </jdbc-additional-properties>
+      <working-dir>$ProjectFileDir$</working-dir>
+      <keep-alive enable="true" />
+      <auto-close enable="true" />
+    </data-source>
+    <data-source source="LOCAL" name="DEV" single-connection="true" uuid="7559d383-0d5b-4efc-aa54-26fd22243105">
+      <driver-ref>snowflake</driver-ref>
+      <synchronize>true</synchronize>
+      <auto-commit>false</auto-commit>
+      <jdbc-driver>net.snowflake.client.jdbc.SnowflakeDriver</jdbc-driver>
+      <jdbc-url>jdbc:snowflake://siedpenpd.snowflakecomputing.com:443?warehouse=FTG_WHS&amp;db=FTGDEV&amp;role=PSN-NAVNPRDSF-FTG-ADM&amp;schema=FTG_OPERATION</jdbc-url>
+      <jdbc-additional-properties>
+        <property name="authenticator" value="externalbrowser" />
+      </jdbc-additional-properties>
+      <working-dir>$ProjectFileDir$</working-dir>
+      <init-script>set allow_id_token = TRUE;use role &quot;PSN-NAVNPRDSF-FTG-ADM&quot;; use schema PREPROD; USE DATABASE FTGPREPROD; USE WAREHOUSE FTG_WHS;</init-script>
+      <keep-alive enable="true" />
+      <auto-close enable="true" />
+    </data-source>
+  </component>
+</application>

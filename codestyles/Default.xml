@@ -1,0 +1,37 @@
+<code_scheme name="Default" version="173">
+  <ScalaCodeStyleSettings>
+    <option name="MULTILINE_STRING_CLOSING_QUOTES_ON_NEW_LINE" value="true" />
+  </ScalaCodeStyleSettings>
+  <SqlCodeStyleSettings version="6">
+    <option name="KEYWORD_CASE" value="2" />
+    <option name="TYPE_CASE" value="2" />
+    <option name="CUSTOM_TYPE_CASE" value="2" />
+    <option name="SUBQUERY_OPENING" value="4" />
+    <option name="WITH_ALIGN_AS" value="true" />
+    <option name="FROM_ALIGN_JOIN_TABLES" value="true" />
+    <option name="FROM_ALIGN_ALIASES" value="true" />
+    <option name="FROM_INDENT_JOIN" value="false" />
+    <option name="FROM_ONLY_JOIN_INDENT" value="2" />
+    <option name="FROM_PLACE_ON" value="10" />
+    <option name="WHERE_EL_LINE" value="101" />
+    <option name="WHERE_EL_WRAP" value="0" />
+    <option name="WHERE_EL_BOUND" value="0" />
+    <option name="SCRIPT_STMT_SEMICOLON_WRAP" value="2" />
+    <option name="SCRIPT_STMT_FOLLOWS_BLANK_LINE" value="1" />
+    <option name="CORTEGE_COMMA_1ST" value="true" />
+    <option name="EXPR_SPACE_WITHIN_PARENTHESES" value="true" />
+    <option name="EXPR_CASE_THEN_WRAP" value="true" />
+    <option name="EXPR_CASE_THEN_ALIGN" value="true" />
+    <option name="EXPR_CASE_END" value="1" />
+  </SqlCodeStyleSettings>
+  <codeStyleSettings language="SQL">
+    <indentOptions>
+      <option name="INDENT_SIZE" value="2" />
+      <option name="TAB_SIZE" value="2" />
+    </indentOptions>
+  </codeStyleSettings>
+  <codeStyleSettings language="Scala">
+    <option name="BLOCK_COMMENT_ADD_SPACE" value="true" />
+    <option name="IF_BRACE_FORCE" value="3" />
+  </codeStyleSettings>
+</code_scheme>

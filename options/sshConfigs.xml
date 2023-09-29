@@ -1,0 +1,7 @@
+<application>
+  <component name="SshConfigs">
+    <configs>
+      <sshConfig authType="OPEN_SSH" host="siedpenpd.snowflakecomputing.com" id="2e910ae8-ab65-4de9-a5d7-3621fbef78e2" port="443" nameFormat="DESCRIPTIVE" username="aadhav" useOpenSSHConfig="true" />
+    </configs>
+  </component>
+</application>

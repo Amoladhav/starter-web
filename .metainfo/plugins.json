@@ -1,0 +1,89 @@
+{
+    "plugins": {
+        "Pythonid": {
+            "enabled": false,
+            "dependencies": [
+                "intellij.grid.impl"
+            ]
+        },
+        "UpperLowerCapitalize": {
+            "enabled": false
+        },
+        "aws.toolkit": {
+            "enabled": false,
+            "dependencies": [
+                "com.intellij.modules.platform",
+                "com.intellij.modules.lang",
+                "org.jetbrains.plugins.yaml"
+            ]
+        },
+        "com.egoshard.intellij.k8s-runtime-config-plugin": {
+            "enabled": false,
+            "dependencies": [
+                "com.intellij.modules.lang",
+                "com.intellij.modules.java"
+            ]
+        },
+        "com.intellij.kubernetes": {
+            "enabled": false
+        },
+        "com.microsoft.tooling.msservices.intellij.azure": {
+            "enabled": false,
+            "dependencies": [
+                "org.jetbrains.idea.maven",
+                "com.intellij.modules.java",
+                "org.jetbrains.plugins.terminal",
+                "com.intellij.gradle",
+                "org.jetbrains.plugins.gradle"
+            ]
+        },
+        "com.mle.idea.sbtexecutor": {
+            "dependencies": [
+                "com.intellij.modules.platform"
+            ]
+        },
+        "fctorial.worldClock": {
+            "dependencies": [
+                "com.intellij.modules.platform"
+            ]
+        },
+        "me.mbolotov.json.schema.generator": {
+            "dependencies": [
+                "com.intellij.modules.platform"
+            ]
+        },
+        "net.sf.opk.avro-schema-support": {
+            "dependencies": [
+                "com.intellij.modules.platform",
+                "com.intellij.modules.lang"
+            ]
+        },
+        "org.intellij.scala": {
+            "enabled": false,
+            "dependencies": [
+                "com.intellij.modules.java"
+            ]
+        },
+        "org.jetbrains.plugins.docker.gateway": {
+            "enabled": false
+        },
+        "org.jfrog.idea": {
+            "enabled": false,
+            "dependencies": [
+                "com.intellij.modules.lang"
+            ]
+        },
+        "ru.meanmail.plugin.requirements": {
+            "enabled": false,
+            "dependencies": [
+                "com.intellij.modules.platform",
+                "com.intellij.modules.lang"
+            ]
+        },
+        "uk.co.hadoopathome.intellij.avro.intellijavroviewer": {
+            "dependencies": [
+                "com.intellij.modules.lang"
+            ]
+        }
+    }
+}
