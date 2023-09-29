@@ -1,6 +1,6 @@
 # Starter Web Repo
 
-This is a sample section 
+This is a sample section. Adding a line for rebasing example 
 
 ## Introduction
 
