@@ -21,4 +21,5 @@ Please fork this repoistory and then ask for a pull request
 This is a sample deployment text.
 Added something more.
 
-2023 GIT TRAING COPYRIGHT
+### Copyright
+2023 GIT TRAING COPYRIGHT. All rights reserved.
